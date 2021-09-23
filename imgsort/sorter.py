@@ -67,7 +67,7 @@ class Sorter:
         self.placement.height = self.win_y - FOOTER_HEIGHT - 1
 
         # version
-        self.version = "Glowzwiebel Image Sorter 1.0"
+        self.version = "Image Sorter 1.0"
 
     def validate_dirs(self):
         """
@@ -234,7 +234,7 @@ def main():
     # set working directory
     print("""
 ===================================================================================================
-Glowzwiebel Image Sorter
+Image Sorter
 ===================================================================================================
 """)
     if len(argv) > 1:
