@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
         name="imgsort",
-        version="1.0",
+        version="1.1",
         description="A program that lets you easily sort images into different folders.",
 
         author="Matthias Quintern",

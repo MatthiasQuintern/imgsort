@@ -62,12 +62,12 @@ class Sorter:
         self.placement.visibility = uz.Visibility.VISIBLE
         self.placement.scaler = uz.ScalerOption.FIT_CONTAIN.value
         self.placement.x = SIDEBAR_WIDTH + 1
-        self.placement.y = 1
+        self.placement.y = 2
         self.placement.width = self.win_x - SIDEBAR_WIDTH - 1
-        self.placement.height = self.win_y - FOOTER_HEIGHT - 1
+        self.placement.height = self.win_y - FOOTER_HEIGHT - 2
 
         # version
-        self.version = "Image Sorter 1.0"
+        self.version = "Image Sorter 1.1"
 
     def validate_dirs(self):
         """
@@ -96,8 +96,9 @@ class Sorter:
             if (path.isfile(name)):
                 self.images.append(name)
 
+        self.images.sort()
         self.images_new = self.images.copy()
-        print(self.images)
+        # print(self.images)
             
     def display_image(self):
         with self.canvas.lazy_drawing: # issue ueberzug command AFTER with-statement
@@ -223,6 +224,7 @@ class Sorter:
     def quit(self, message = ""): 
         self.window.clear()
         self.window.refresh()
+        c.endwin()
         print(message)
         print("Quitting " + self.version)
         exit(0)

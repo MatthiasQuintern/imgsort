@@ -9,10 +9,12 @@ cd ~/Pictures
 imgsort
 ```
 2. When you run it the first time, you will be prompted to create a new config. That means you need to assign keyboard keys to directories in your filesystem.
-For example, you could use:
+    For example, you could use:
     - f = *~/Pictures/Family*
-    - v = *~/Pictures/Vacation 2019*
+    - v = *~/Pictures/Vacation_2019*
     - o = *~/Pictures/Other*
+
+    Note that 's', 'u' and 'q' are reserved for 'skip', 'undo' and 'quit', but you can use 'S', 'U' and 'Q' instead.
 3. Save the config if you might want to use it again. The config file will be stored in *~/.config/imgsort*.
 4. Enjoy the slideshow!
 
@@ -26,3 +28,14 @@ cd imgsort
 python3 -m pip install .
 ```
 You can also install it system-wide using `sudo python3 -m pip install.`
+
+## Changelog
+### 1.1
+- Terminal does not break anymore when program exits
+- Todo-Images are now sorted by filename
+
+### 1.0
+Initial Release
+
+## Importand Notice:
+This software comes with no warranty!
