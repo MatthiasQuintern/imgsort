@@ -29,7 +29,7 @@ KEYS_BEGIN = 5
 class Sorter:
     def __init__(self, wdir, canvas, config):
         self.wd = wdir
-        
+
         self.images = [] # old paths
         self.images_new = [] # new paths
         self.image_iter = 0
@@ -259,10 +259,8 @@ Image Sorter
     with uz.Canvas() as canvas:
         sorter = Sorter(wd, canvas, config)
         sorter.get_images()
-        # sorter.move_file("/home/matth/Bilder/Clara/bank.jpg", "/home")
-        # sorter.print_window()
         sorter.sort()
-        
+
 
 if __name__ == "__main__":
     main()
