@@ -1,12 +1,11 @@
 #!/bin/python3
 
-import curses as c
-import ueberzug.lib.v0 as uz
 
+from imgsort.ueberzug import UeberzugLayer
 from imgsort.configs import read_config, write_config, select_config, create_config
 
+import curses as c
 from os import path, getcwd, listdir, mkdir, makedirs, rename
-
 from sys import argv
 
 settings = {
@@ -27,7 +26,7 @@ CURSOR_Y = 2
 KEYS_BEGIN = 5
 
 class Sorter:
-    def __init__(self, wdir, canvas, config):
+    def __init__(self, wdir, config):
         self.wd = wdir
 
         self.images = [] # old paths
@@ -56,15 +55,13 @@ class Sorter:
         c.echo()
 
         # ueberzug
-        self.canvas = canvas
 
-        self.placement = self.canvas.create_placement("p1", x=0, y=0, path="")
-        self.placement.visibility = uz.Visibility.VISIBLE
-        self.placement.scaler = uz.ScalerOption.FIT_CONTAIN.value
-        self.placement.x = SIDEBAR_WIDTH + 1
-        self.placement.y = 2
-        self.placement.width = self.win_x - SIDEBAR_WIDTH - 1
-        self.placement.height = self.win_y - FOOTER_HEIGHT - 2
+        self._ueberzug = UeberzugLayer(pid_file="/tmp/ueberzu-imgsort.pid")
+        self._img_x = SIDEBAR_WIDTH + 1
+        self._img_y = 2
+        self._img_width = self.win_x - SIDEBAR_WIDTH - 1
+        self._img_height = self.win_y - FOOTER_HEIGHT - 2
+        self._img_identifier = "imgsort_preview"
 
         # version
         self.version = "Image Sorter 1.1"
@@ -99,11 +96,10 @@ class Sorter:
         self.images.sort()
         self.images_new = self.images.copy()
         # print(self.images)
-            
+
     def display_image(self):
-        with self.canvas.lazy_drawing: # issue ueberzug command AFTER with-statement
-            self.placement.path = self.image
-            self.window.addnstr(0, SIDEBAR_WIDTH + 1, self.placement.path, self.win_x - SIDEBAR_WIDTH - 1)
+        self._ueberzug.display_image(self.image, x=self._img_x, y=self._img_y, max_width=self._img_width, max_height=self._img_height, identifier=self._img_identifier)
+        self.window.addnstr(0, SIDEBAR_WIDTH + 1, self.image, self.win_x - SIDEBAR_WIDTH - 1)
 
     def sort(self):
         """
@@ -147,13 +143,13 @@ class Sorter:
                 self.image_iter += 1
 
         self.quit("All done!")
-        
+
     def print_window(self):
         """
         Draw lines and text
         """
         self.window.erase()
-        
+
         # lines
         self.window.hline(self.win_y - FOOTER_HEIGHT, FOOTER_LEFT, '=', self.win_x)
         self.window.vline(0, SIDEBAR_WIDTH, '|', self.win_y - FOOTER_HEIGHT + 1)
@@ -209,13 +205,13 @@ class Sorter:
             i += 1
 
         self.window.move(CURSOR_Y, CURSOR_X)
-    
+
     def move_file(self, file, dest):
         # if not path.isdir(dest):
         #     makedirs(dest)
         if not path.isfile(file): return False
         if not path.isdir(dest): return False
-        
+
         new_path = path.normpath(dest + '/' + path.split(file)[1])
 
         rename(file, new_path)
@@ -228,7 +224,6 @@ class Sorter:
         print(message)
         print("Quitting " + self.version)
         exit(0)
-    
 
 
 
@@ -256,10 +251,9 @@ Image Sorter
         print("  Config:", config)
         exit(1)
 
-    with uz.Canvas() as canvas:
-        sorter = Sorter(wd, canvas, config)
-        sorter.get_images()
-        sorter.sort()
+    sorter = Sorter(wd, config)
+    sorter.get_images()
+    sorter.sort()
 
 
 if __name__ == "__main__":
