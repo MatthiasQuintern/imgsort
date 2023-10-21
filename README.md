@@ -30,6 +30,10 @@ python3 -m pip install .
 You can also install it system-wide using `sudo python3 -m pip install.`
 
 ## Changelog
+### 1.2
+- Works with ueberzugpp
+- Use pyproject.toml for installation
+
 ### 1.1
 - Terminal does not break anymore when program exits
 - Todo-Images are now sorted by filename
