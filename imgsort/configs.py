@@ -2,8 +2,9 @@ from os import path, getcwd, listdir, mkdir, makedirs, rename
 import re
 
 def read_config(filepath):
-    if not path.isfile(filepath): return False
-    
+    if not path.isfile(filepath):
+        raise FileNotFoundError(f"read_config: Invalid filepath {filepath}")
+
     file = open(filepath, 'r')
     keys = {}
     for line in file.readlines():
@@ -26,13 +27,12 @@ def create_config():
 """
 ===================================================================================================
 Creating a new config
+    Please enter at least one key and one directory.
+    The key must be one single letter, a single digit number or some other keyboard key like .-#+&/ ...
+    The key can not be 'q', 's', 'o' or 'u'.
+    The directory must be a valid path to a directory, but is does not have to exist.
+    You can use an absolute path (starting with '/', not '~') or a relative path (from here).
 ===================================================================================================
-Please enter at least one key and one directory.
-The key must be one single letter, a single digit number or some other keyboard key like .-#+&/ ...
-The key can not be 'q', 's' or 'u'.
-The directory must be a valid path to a directory, but is does not have to exist.
-You can use an absolute path (starting with '/') or a relative path (from here).
-Do not use '~'!
 """
             )
 
@@ -77,7 +77,7 @@ def select_config():
     config_path = path.expanduser("~") + "/.config/imgsort"
     if not path.isdir(config_path) or len(listdir(config_path)) == 0:
         return False
-    
+
     configs = {}
 
     i = 1
@@ -93,9 +93,9 @@ def select_config():
         print(f"{n}: {conf}")
 
     choice = input("Please select a config: ")
-    if choice == "0": return False
+    if choice == "0": return None
     elif choice in configs:
         return path.normpath(config_path + "/" + configs[choice])
     else:
         print("Invalid choice - creating new config")
-        return False
+        return None
