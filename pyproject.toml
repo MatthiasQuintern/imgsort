@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools"]
+
+[project]
+name = "imgsort"
+version = "1.2.0"
+description = "A program that lets you easily sort images into different folders."
+requires-python = ">=3.10"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+    { name = "Matthias Quintern", email = "matthias.quintern@posteo.de" }
+]
+classifiers = [
+    "Operating System :: POSIX :: Linux",
+    "Environment :: Console :: Curses",
+    "Programming Language :: Python :: 3",
+    "Topic :: Multimedia :: Graphics",
+    "Topic :: Utilities",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+]
+dependencies = [
+]
+
+[project.urls]
+repository = "https://github.com/MatthiasQuintern/imgsort"
+
+
+[project.scripts]
+imgsort = "imgsort.sorter:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
