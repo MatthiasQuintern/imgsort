@@ -3,16 +3,25 @@
 import curses as c
 import ueberzug.lib.v0 as uz
 
-from imgsort.configs import read_config, write_config, select_config, create_config
+<<<<<<< HEAD
 
 from os import path, getcwd, listdir, mkdir, makedirs, rename
+import subprocess
 
-from sys import argv
+if __name__ == "__main__":  # make relative imports work as described here: https://peps.python.org/pep-0366/#proposed-change
+    if __package__ is None:
+        __package__ = "imgsort"
+        import sys
+        filepath = path.realpath(path.abspath(__file__))
+        sys.path.insert(0, path.dirname(path.dirname(filepath)))
+
+from .configs import read_config, write_config, select_config, create_config
 
 settings = {
             "q": "quit",
             "s": "skip",
             "u": "undo",
+            "o": "open"
         }
 
 # Size settings
@@ -25,6 +34,8 @@ CURSOR_X = 0
 CURSOR_Y = 2
 
 KEYS_BEGIN = 5
+
+version = "1.2-legacy"
 
 class Sorter:
     def __init__(self, wdir, canvas, config):
@@ -65,9 +76,6 @@ class Sorter:
         self.placement.y = 2
         self.placement.width = self.win_x - SIDEBAR_WIDTH - 1
         self.placement.height = self.win_y - FOOTER_HEIGHT - 2
-
-        # version
-        self.version = "Image Sorter 1.1"
 
     def validate_dirs(self):
         """
@@ -135,6 +143,12 @@ class Sorter:
                     else:
                         self.message = "Nothing to undo!"
                         continue
+                elif settings[self.pressed_key] == "open":
+                    try:
+                        subprocess.run(['xdg-open', self.image])
+                        self.message = "Opening with xdg-open"
+                    except Exception as e:
+                        print(f"open: Error: {e}")
 
             # move to folder
             elif self.pressed_key in self.keys:
@@ -143,24 +157,25 @@ class Sorter:
                     self.images_new[self.image_iter] = new_filepath
                     self.message = f"Moved image to {self.keys[self.pressed_key]}"
                 else:
-                    self.message = f"ERROR: Failed to move '{self.image}' to '{keys[self.pressed_key]}'."
+                    self.message = f"ERROR: Failed to move '{self.image}' to '{self.keys[self.pressed_key]}'."
                 self.image_iter += 1
 
         self.quit("All done!")
-        
+
     def print_window(self):
         """
         Draw lines and text
         """
         self.window.erase()
-        
+
         # lines
         self.window.hline(self.win_y - FOOTER_HEIGHT, FOOTER_LEFT, '=', self.win_x)
         self.window.vline(0, SIDEBAR_WIDTH, '|', self.win_y - FOOTER_HEIGHT + 1)
 
         # version
-        x = self.win_x - len(self.version) - 1
-        self.window.addstr(self.win_y - 1, x, self.version)
+        version_str = f"imgsort {version}"
+        x = self.win_x - len(version_str) - 1
+        self.window.addstr(self.win_y - 1, x, version_str)
 
         # wd
         wdstring = f"Sorting {self.wd} - {len(self.images)} files - {len(self.images) - self.image_iter} remaining."
@@ -209,24 +224,24 @@ class Sorter:
             i += 1
 
         self.window.move(CURSOR_Y, CURSOR_X)
-    
+
     def move_file(self, file, dest):
         # if not path.isdir(dest):
         #     makedirs(dest)
         if not path.isfile(file): return False
         if not path.isdir(dest): return False
-        
+
         new_path = path.normpath(dest + '/' + path.split(file)[1])
 
         rename(file, new_path)
         return new_path
 
-    def quit(self, message = ""): 
+    def quit(self, message = ""):
         self.window.clear()
         self.window.refresh()
         c.endwin()
         print(message)
-        print("Quitting " + self.version)
+        print(f"Quitting imgsort {version}")
         exit(0)
     
 
@@ -234,25 +249,47 @@ class Sorter:
 
 def main():
     # set working directory
-    print("""
-===================================================================================================
-Image Sorter
-===================================================================================================
-""")
-    if len(argv) > 1:
-        wd = path.abspath(argv[1])
-    else:
-        wd = getcwd();
+    print(f"""===================================================================================================
+imgsort {version} - Image Sorter
+===================================================================================================""")
+    # set directories
+    config_dir = os.path.join(os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config")), "regina")
+    # check if environment variables are set and use them if they are
+    if 'IMGSOSRT_CONFIG_DIR' in os.environ: config_dir = os.environ['IMGSORT_CONFIG_DIR']
 
-    config_name = select_config()
-    if type(config_name) == str:
-        config = read_config(config_name)
+    parser = argparse.ArgumentParser(prog="imgsort")
+    parser.add_argument("--config", "-c",   action="store",         help="name or path of config file", metavar="config file")
+    parser.add_argument("--dir", "-d",      action="store",         help="working directory", metavar="working directory")
+    args = parser.parse_args()
+
+    # working directory
+    if args.dir:
+        if not path.isdir(args.dir):
+            parser.error(f"invalid working directory: {args.wdir}")
+        wd = path.abspath(args.dir)
+        os.chdir(wd)
+    else:
+        wd = getcwd()
+
+    # configuration
+    if args.config:
+        config_path = args.config_file
+        # search locally
+        if not path.isfile(config_path):
+            config_path = path.join(config_dir, args.config)
+            if not path.isfile(config_path):
+                parser.error(f"invalid configuration path/name:'{config_path}'/'{args.config}'")
+    else:
+        config_path = select_config()
+    print(config_path)
+    if config_path is not None:
+        config = read_config(config_path)
     else:
         config = create_config()
 
     if not config:
         print("Error reading the config:")
-        print("  Config Name:", config_name)
+        print("  Config Name:", config_path)
         print("  Config:", config)
         exit(1)
 
