@@ -125,7 +125,7 @@ class Sorter:
 
             self.pressed_key = self.window.getkey() # wait until user presses something
 
-            # check for quit, skip or undo
+            # check for quit, skip, undo or open
             if self.pressed_key in self.settings:
                 if self.settings[self.pressed_key] == "quit":
                     self.quit(f"Key '{self.pressed_key}' pressed. Canceling image sorting")
@@ -145,10 +145,11 @@ class Sorter:
                         continue
                 elif settings[self.pressed_key] == "open":
                     try:
-                        subprocess.run(['xdg-open', self.image])
+                        subprocess.run(['xdg-open', self.image], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
                         self.message = "Opening with xdg-open"
                     except Exception as e:
                         print(f"open: Error: {e}")
+                    continue
 
             # move to folder
             elif self.pressed_key in self.keys:
@@ -167,6 +168,7 @@ class Sorter:
         Draw lines and text
         """
         self.window.erase()
+        self.win_y, self.win_x = self.window.getmaxyx()
 
         # lines
         self.window.hline(self.win_y - FOOTER_HEIGHT, FOOTER_LEFT, '=', self.win_x)
@@ -237,13 +239,15 @@ class Sorter:
         return new_path
 
     def quit(self, message = ""):
-        self.window.clear()
-        self.window.refresh()
-        c.endwin()
         print(message)
         print(f"Quitting imgsort {version}")
         exit(0)
     
+
+    def __del__(self):
+        self.window.clear()
+        self.window.refresh()
+        c.endwin()
 
 
 
