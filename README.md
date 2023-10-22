@@ -17,7 +17,7 @@ imgsort
     - `o` = `~/Pictures/Other`
 
     Note that `s`, `u` and `q` are reserved for *skip*, *undo* and *quit*, but you can use `S`, `U` and `Q` instead.
-3. Save the config if you might want to use it again. The config file will be stored in `~/.config/imgsort`.
+3. Save the config if you might want to use it again. The config file will be stored in `$XDG_CONFIG_DIR` or `~/.config/imgsort`.
 4. Enjoy the slideshow!
 
 ## Installation
@@ -39,14 +39,11 @@ python3 -m pip install .
 ```
 
 ## Changelog
-<<<<<<< HEAD
-=======
 ### 1.2
 - Support ueberzugpp
 - Added option to open file with `xdg-open`
 - Use pyproject.toml for installation
 
->>>>>>> d511c4b (add xdg-open)
 ### 1.1
 - Terminal does not break anymore when program exits
 - Todo-Images are now sorted by filename
