@@ -1,6 +1,8 @@
 # imgsort - Image Sorter
-This is a python program that lets you easily sort images from one directory into other directories.
-For example, you could go through your phone's camera folder and sort the images into different folders, like *Family*, *Landscapes*, *Friends* etc.
+This is a python program for Linux that lets you easily sort images from one directory into other directories.
+It lets you go through a folder of images and simply move them using a single key press, which you define at program startup.
+This is very useful when you want to sort your phone's camera folder or messenger media folders.
+For example, you could quickly go through your WhatsApp media (after copying it to your pc) and sort the images into different directories like *Selfies*, *Landscapes*, *Friends* etc.
 
 ## Usage
 1. Navigate to the folder containing the images and run "imgsort". 
@@ -20,20 +22,38 @@ imgsort
 
 ## Installation
 Clone this repository and install it using python-pip.
-pip should also install https://github.com/seebye/ueberzug, which lets you view images in a terminal.
+This project depends on ueberzug to display the images in the terminal.
+The original ueberzug is no longer maintained, but there is [a continuation](https://github.com/ueber-devel/ueberzug/) as well as a [new C++ alternative](https://github.com/jstkdng/ueberzugpp) available.
+
+For the version supporting the original **ueberzug**:
 ```shell
-cd ~/Downloads
 git clone https://github.com/MatthiasQuintern/imgsort.git
 cd imgsort
 python3 -m pip install .
 ```
-You can also install it system-wide using `sudo python3 -m pip install.`
+For the version supporting the new **ueberzug++**:
+```shell
+git clone --branch ueberzugpp https://github.com/MatthiasQuintern/imgsort.git
+cd imgsort
+python3 -m pip install .
+```
 
 ## Changelog
+<<<<<<< HEAD
 ### 1.2
 - Works with ueberzugpp
 - Use pyproject.toml for installation
 
+=======
+<<<<<<< HEAD
+=======
+### 1.2
+- Support ueberzugpp
+- Added option to open file with `xdg-open`
+- Use pyproject.toml for installation
+
+>>>>>>> d511c4b (add xdg-open)
+>>>>>>> b1d3d76 (add xdg-open)
 ### 1.1
 - Terminal does not break anymore when program exits
 - Todo-Images are now sorted by filename
