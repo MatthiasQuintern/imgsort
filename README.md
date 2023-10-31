@@ -51,5 +51,5 @@ python3 -m pip install .
 ### 1.0
 - Initial Release
 
-## Importand Notice:
+## Important Notice:
 This software comes with no warranty!
