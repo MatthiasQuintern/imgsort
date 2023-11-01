@@ -42,10 +42,6 @@ python3 -m pip install .
 
 ## Changelog
 ### 1.2
-- Works with ueberzugpp
-- Use pyproject.toml for installation
-
-### 1.2
 - Support ueberzugpp
 - Added option to open file with `xdg-open`
 - Use pyproject.toml for installation
