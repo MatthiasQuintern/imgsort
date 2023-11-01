@@ -64,7 +64,7 @@ class Sorter:
         self._img_identifier = "imgsort_preview"
 
         # version
-        self.version = "Image Sorter 1.1"
+        self.version = "1.2++"
 
     def validate_dirs(self):
         """
