@@ -4,6 +4,8 @@ It lets you go through a folder of images and simply move them using a single ke
 This is very useful when you want to sort your phone's camera folder or messenger media folders.
 For example, you could quickly go through your WhatsApp media (after copying it to your pc) and sort the images into different directories like *Selfies*, *Landscapes*, *Friends* etc.
 
+<img src="imgsort-example.jpg" width="80%" />
+
 ## Usage
 1. Navigate to the folder containing the images and run "imgsort". 
 ```shell
