@@ -16,9 +16,9 @@ imgsort
     For example, you could use:
     - `f` = `~/Pictures/Family`
     - `v` = `~/Pictures/Vacation_2019`
-    - `o` = `~/Pictures/Other`
+    - `O` = `~/Pictures/Other`
 
-    Note that `s`, `u` and `q` are reserved for *skip*, *undo* and *quit*, but you can use `S`, `U` and `Q` instead.
+    Note that `s`, `u`, `o` and `q` are reserved for *skip*, *undo*, *open* and *quit*, but you can use `S`, `U` and `Q` instead.
 3. Save the config if you might want to use it again. The config file will be stored in `$XDG_CONFIG_DIR` or `~/.config/imgsort`.
 4. Enjoy the slideshow!
 
