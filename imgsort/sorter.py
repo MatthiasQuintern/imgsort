@@ -17,6 +17,8 @@ if __name__ == "__main__":  # make relative imports work as described here: http
 
 from .configs import read_config, write_config, select_config, create_config
 
+import argparse
+
 settings = {
             "q": "quit",
             "s": "skip",
@@ -219,6 +221,8 @@ class Sorter:
         for k, v in self.keys.items():
             if i >= self.win_y - KEYS_BEGIN - FOOTER_HEIGHT: # dont write into footer
                 break
+            # show only last part
+            v = v.split("/")[-1]
             if k == self.pressed_key:
                 self.window.addnstr(KEYS_BEGIN + i, 0, f"  {k}: {v}", SIDEBAR_WIDTH, c.A_STANDOUT)
             else:
@@ -239,12 +243,15 @@ class Sorter:
         return new_path
 
     def quit(self, message = ""):
+<<<<<<< HEAD
         print(message)
         print(f"Quitting imgsort {version}")
         exit(0)
     
 
     def __del__(self):
+=======
+>>>>>>> 1fd5e82 (use argparse and allow sort into other dir)
         self.window.clear()
         self.window.refresh()
         c.endwin()
@@ -253,27 +260,26 @@ class Sorter:
 
 def main():
     # set working directory
-    print(f"""===================================================================================================
-imgsort {version} - Image Sorter
-===================================================================================================""")
-    # set directories
-    config_dir = os.path.join(os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config")), "regina")
+    print("""
+===================================================================================================
+Image Sorter
+===================================================================================================
+""")
+    config_dir = os.path.join(os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config")), "imgsort")
     # check if environment variables are set and use them if they are
     if 'IMGSOSRT_CONFIG_DIR' in os.environ: config_dir = os.environ['IMGSORT_CONFIG_DIR']
 
-    parser = argparse.ArgumentParser(prog="imgsort")
-    parser.add_argument("--config", "-c",   action="store",         help="name or path of config file", metavar="config file")
-    parser.add_argument("--dir", "-d",      action="store",         help="working directory", metavar="working directory")
+    parser = argparse.ArgumentParser("imgsort")
+    parser.add_argument("-c", "--config", action="store", help="name of the config file in ~/.config/imgsort")
+    parser.add_argument("-i", "--sort-dir", action="store", help="the directory where the folders from the config will be created")
     args = parser.parse_args()
 
-    # working directory
-    if args.dir:
-        if not path.isdir(args.dir):
-            parser.error(f"invalid working directory: {args.wdir}")
-        wd = path.abspath(args.dir)
-        os.chdir(wd)
+    wd = getcwd();
+
+    if args.sort_dir:
+        args.sort_dir = path.abspath(args.sort_dir)
     else:
-        wd = getcwd()
+        args.sort_dir = getcwd()
 
     # configuration
     if args.config:
@@ -284,8 +290,9 @@ imgsort {version} - Image Sorter
             if not path.isfile(config_path):
                 parser.error(f"invalid configuration path/name:'{config_path}'/'{args.config}'")
     else:
-        config_path = select_config()
+        args.config = select_config()
     print(config_path)
+    config = read_config(args.config, root_directory=args.sort_dir)
     if config_path is not None:
         config = read_config(config_path)
     else:
@@ -293,7 +300,7 @@ imgsort {version} - Image Sorter
 
     if not config:
         print("Error reading the config:")
-        print("  Config Name:", config_path)
+        print("  Config Name:", args.config)
         print("  Config:", config)
         exit(1)
 
