@@ -8,6 +8,8 @@ import curses as c
 from os import path, getcwd, listdir, mkdir, makedirs, rename
 from sys import argv
 
+import argparse
+
 settings = {
             "q": "quit",
             "s": "skip",
@@ -198,6 +200,8 @@ class Sorter:
         for k, v in self.keys.items():
             if i >= self.win_y - KEYS_BEGIN - FOOTER_HEIGHT: # dont write into footer
                 break
+            # show only last part
+            v = v.split("/")[-1]
             if k == self.pressed_key:
                 self.window.addnstr(KEYS_BEGIN + i, 0, f"  {k}: {v}", SIDEBAR_WIDTH, c.A_STANDOUT)
             else:
@@ -217,7 +221,7 @@ class Sorter:
         rename(file, new_path)
         return new_path
 
-    def quit(self, message = ""): 
+    def quit(self, message = ""):
         self.window.clear()
         self.window.refresh()
         c.endwin()
@@ -234,20 +238,25 @@ def main():
 Image Sorter
 ===================================================================================================
 """)
-    if len(argv) > 1:
-        wd = path.abspath(argv[1])
-    else:
-        wd = getcwd();
+    parser = argparse.ArgumentParser("imgsort")
+    parser.add_argument("-c", "--config", action="store", help="name of the config file in ~/.config/imgsort")
+    parser.add_argument("-i", "--sort-dir", action="store", help="the directory where the folders from the config will be created")
+    args = parser.parse_args()
 
-    config_name = select_config()
-    if type(config_name) == str:
-        config = read_config(config_name)
+    wd = getcwd();
+
+    if args.sort_dir:
+        args.sort_dir = path.abspath(args.sort_dir)
     else:
-        config = create_config()
+        args.sort_dir = getcwd()
+
+    if not args.config:
+        args.config = select_config()
+    config = read_config(args.config, root_directory=args.sort_dir)
 
     if not config:
         print("Error reading the config:")
-        print("  Config Name:", config_name)
+        print("  Config Name:", args.config)
         print("  Config:", config)
         exit(1)
 

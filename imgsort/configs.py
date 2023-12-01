@@ -1,9 +1,9 @@
 from os import path, getcwd, listdir, mkdir, makedirs, rename
 import re
 
-def read_config(filepath):
+def read_config(filepath, root_directory="."):
     if not path.isfile(filepath): return False
-    
+
     file = open(filepath, 'r')
     keys = {}
     for line in file.readlines():
@@ -11,7 +11,7 @@ def read_config(filepath):
         match = re.match(r". = /?([a-z-A-ZöÖäÄüÜ0-9/: _-]+/)*[a-zA-ZöÖäÄüÜ0-9/: _-]+/?", line)
         if match:
             key, value = line.split(" = ")
-            keys[key]  = value
+            keys[key]  = root_directory + "/" + value
     return keys
 
 def write_config(filepath, keys):
