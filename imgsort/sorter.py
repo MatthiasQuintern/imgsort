@@ -3,9 +3,8 @@
 import curses as c
 import ueberzug.lib.v0 as uz
 
-<<<<<<< HEAD
-
-from os import path, getcwd, listdir, mkdir, makedirs, rename
+import os
+from os import path, getcwd, listdir, makedirs, rename
 import subprocess
 
 if __name__ == "__main__":  # make relative imports work as described here: https://peps.python.org/pep-0366/#proposed-change
@@ -15,7 +14,7 @@ if __name__ == "__main__":  # make relative imports work as described here: http
         filepath = path.realpath(path.abspath(__file__))
         sys.path.insert(0, path.dirname(path.dirname(filepath)))
 
-from .configs import read_config, write_config, select_config, create_config
+from .configs import read_config, select_config
 
 import argparse
 
@@ -243,19 +242,14 @@ class Sorter:
         return new_path
 
     def quit(self, message = ""):
-<<<<<<< HEAD
         print(message)
         print(f"Quitting imgsort {version}")
         exit(0)
-    
 
     def __del__(self):
-=======
->>>>>>> 1fd5e82 (use argparse and allow sort into other dir)
         self.window.clear()
         self.window.refresh()
         c.endwin()
-
 
 
 def main():
@@ -270,7 +264,7 @@ Image Sorter
     if 'IMGSOSRT_CONFIG_DIR' in os.environ: config_dir = os.environ['IMGSORT_CONFIG_DIR']
 
     parser = argparse.ArgumentParser("imgsort")
-    parser.add_argument("-c", "--config", action="store", help="name of the config file in ~/.config/imgsort")
+    parser.add_argument("-c", "--config", action="store", help="name of the config file in ($IMGSORT_CONFIG_DIR > $XDG_CONFIG_HOME/imgsort > ~/.config/imgsort)")
     parser.add_argument("-i", "--sort-dir", action="store", help="the directory where the folders from the config will be created")
     args = parser.parse_args()
 
@@ -291,13 +285,8 @@ Image Sorter
                 parser.error(f"invalid configuration path/name:'{config_path}'/'{args.config}'")
     else:
         args.config = select_config()
-    print(config_path)
-    config = read_config(args.config, root_directory=args.sort_dir)
-    if config_path is not None:
-        config = read_config(config_path)
-    else:
-        config = create_config()
 
+    config = read_config(args.config, root_directory=args.sort_dir)
     if not config:
         print("Error reading the config:")
         print("  Config Name:", args.config)
