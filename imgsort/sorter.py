@@ -1,8 +1,7 @@
 #!/bin/python3
 
+import argparse
 import curses as c
-import ueberzug.lib.v0 as uz
-
 import os
 from os import path, getcwd, listdir, makedirs, rename
 import subprocess
@@ -15,8 +14,8 @@ if __name__ == "__main__":  # make relative imports work as described here: http
         sys.path.insert(0, path.dirname(path.dirname(filepath)))
 
 from .configs import read_config, select_config
+import ueberzug.lib.v0 as uz
 
-import argparse
 
 settings = {
             "q": "quit",
@@ -108,7 +107,7 @@ class Sorter:
         self.images.sort()
         self.images_new = self.images.copy()
         # print(self.images)
-            
+
     def display_image(self):
         with self.canvas.lazy_drawing: # issue ueberzug command AFTER with-statement
             self.placement.path = self.image
