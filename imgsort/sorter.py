@@ -1,19 +1,27 @@
 #!/bin/python3
 
-
-from imgsort.ueberzug import UeberzugLayer
-from imgsort.configs import read_config, write_config, select_config, create_config
-
-import curses as c
-from os import path, getcwd, listdir, mkdir, makedirs, rename
-from sys import argv
-
 import argparse
+import curses as c
+import os
+from os import path, getcwd, listdir, makedirs, rename
+import subprocess
+
+if __name__ == "__main__":  # make relative imports work as described here: https://peps.python.org/pep-0366/#proposed-change
+    if __package__ is None:
+        __package__ = "imgsort"
+        import sys
+        filepath = path.realpath(path.abspath(__file__))
+        sys.path.insert(0, path.dirname(path.dirname(filepath)))
+
+from .configs import read_config, select_config
+from .ueberzug import UeberzugLayer
+
 
 settings = {
             "q": "quit",
             "s": "skip",
             "u": "undo",
+            "o": "open"
         }
 
 # Size settings
@@ -26,6 +34,8 @@ CURSOR_X = 0
 CURSOR_Y = 2
 
 KEYS_BEGIN = 5
+
+version = "1.2"
 
 class Sorter:
     def __init__(self, wdir, config):
@@ -57,7 +67,6 @@ class Sorter:
         c.echo()
 
         # ueberzug
-
         self._ueberzug = UeberzugLayer(pid_file="/tmp/ueberzu-imgsort.pid")
         self._img_x = SIDEBAR_WIDTH + 1
         self._img_y = 2
@@ -65,8 +74,8 @@ class Sorter:
         self._img_height = self.win_y - FOOTER_HEIGHT - 2
         self._img_identifier = "imgsort_preview"
 
-        # version
-        self.version = "1.2++"
+
+
 
     def validate_dirs(self):
         """
@@ -103,6 +112,7 @@ class Sorter:
         self._ueberzug.display_image(self.image, x=self._img_x, y=self._img_y, max_width=self._img_width, max_height=self._img_height, identifier=self._img_identifier)
         self.window.addnstr(0, SIDEBAR_WIDTH + 1, self.image, self.win_x - SIDEBAR_WIDTH - 1)
 
+
     def sort(self):
         """
         Loop until all images are processed
@@ -115,7 +125,7 @@ class Sorter:
 
             self.pressed_key = self.window.getkey() # wait until user presses something
 
-            # check for quit, skip or undo
+            # check for quit, skip, undo or open
             if self.pressed_key in self.settings:
                 if self.settings[self.pressed_key] == "quit":
                     self.quit(f"Key '{self.pressed_key}' pressed. Canceling image sorting")
@@ -133,6 +143,13 @@ class Sorter:
                     else:
                         self.message = "Nothing to undo!"
                         continue
+                elif settings[self.pressed_key] == "open":
+                    try:
+                        subprocess.run(['xdg-open', self.image], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
+                        self.message = "Opening with xdg-open"
+                    except Exception as e:
+                        print(f"open: Error: {e}")
+                    continue
 
             # move to folder
             elif self.pressed_key in self.keys:
@@ -141,7 +158,7 @@ class Sorter:
                     self.images_new[self.image_iter] = new_filepath
                     self.message = f"Moved image to {self.keys[self.pressed_key]}"
                 else:
-                    self.message = f"ERROR: Failed to move '{self.image}' to '{keys[self.pressed_key]}'."
+                    self.message = f"ERROR: Failed to move '{self.image}' to '{self.keys[self.pressed_key]}'."
                 self.image_iter += 1
 
         self.quit("All done!")
@@ -151,14 +168,16 @@ class Sorter:
         Draw lines and text
         """
         self.window.erase()
+        self.win_y, self.win_x = self.window.getmaxyx()
 
         # lines
         self.window.hline(self.win_y - FOOTER_HEIGHT, FOOTER_LEFT, '=', self.win_x)
         self.window.vline(0, SIDEBAR_WIDTH, '|', self.win_y - FOOTER_HEIGHT + 1)
 
         # version
-        x = self.win_x - len(self.version) - 1
-        self.window.addstr(self.win_y - 1, x, self.version)
+        version_str = f"imgsort {version}"
+        x = self.win_x - len(version_str) - 1
+        self.window.addstr(self.win_y - 1, x, version_str)
 
         # wd
         wdstring = f"Sorting {self.wd} - {len(self.images)} files - {len(self.images) - self.image_iter} remaining."
@@ -222,13 +241,14 @@ class Sorter:
         return new_path
 
     def quit(self, message = ""):
+        print(message)
+        print(f"Quitting imgsort {version}")
+        exit(0)
+
+    def __del__(self):
         self.window.clear()
         self.window.refresh()
         c.endwin()
-        print(message)
-        print("Quitting " + self.version)
-        exit(0)
-
 
 
 def main():
@@ -238,8 +258,12 @@ def main():
 Image Sorter
 ===================================================================================================
 """)
+    config_dir = os.path.join(os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config")), "imgsort")
+    # check if environment variables are set and use them if they are
+    if 'IMGSOSRT_CONFIG_DIR' in os.environ: config_dir = os.environ['IMGSORT_CONFIG_DIR']
+
     parser = argparse.ArgumentParser("imgsort")
-    parser.add_argument("-c", "--config", action="store", help="name of the config file in ~/.config/imgsort")
+    parser.add_argument("-c", "--config", action="store", help="name of the config file in ($IMGSORT_CONFIG_DIR > $XDG_CONFIG_HOME/imgsort > ~/.config/imgsort)")
     parser.add_argument("-i", "--sort-dir", action="store", help="the directory where the folders from the config will be created")
     args = parser.parse_args()
 
@@ -250,10 +274,18 @@ Image Sorter
     else:
         args.sort_dir = getcwd()
 
-    if not args.config:
+    # configuration
+    if args.config:
+        config_path = args.config_file
+        # search locally
+        if not path.isfile(config_path):
+            config_path = path.join(config_dir, args.config)
+            if not path.isfile(config_path):
+                parser.error(f"invalid configuration path/name:'{config_path}'/'{args.config}'")
+    else:
         args.config = select_config()
-    config = read_config(args.config, root_directory=args.sort_dir)
 
+    config = read_config(args.config, root_directory=args.sort_dir)
     if not config:
         print("Error reading the config:")
         print("  Config Name:", args.config)
