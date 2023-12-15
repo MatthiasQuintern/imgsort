@@ -1,4 +1,5 @@
-version = "1.2"
+version = "1.2.1"
+fullversion = f"{version}-legacy"
 
 settings_map = {
             "q": "quit",
