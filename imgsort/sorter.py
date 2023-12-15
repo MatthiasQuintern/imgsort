@@ -16,7 +16,6 @@ if __name__ == "__main__":  # make relative imports work as described here: http
 import ueberzug.lib.v0 as uz
 
 from .configs import ConfigManager
-from .ueberzug import UeberzugLayer
 from .globals import version, settings_map
 from .globals import warning, error, user_error, info, create_dir
 
