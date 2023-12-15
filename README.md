@@ -42,6 +42,9 @@ python3 -m pip install .
 
 ## Changelog
 ### 1.2
+#### 1.2.1
+- Refactored configuration management
+#### 1.2.0
 - Support ueberzugpp
 - Added option to open file with `xdg-open`
 - Use pyproject.toml for installation
