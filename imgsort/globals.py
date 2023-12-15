@@ -13,9 +13,8 @@ def error(*args, exitcode=1, **kwargs):
     print("\033[31mError: \033[0m", *args, **kwargs)
     exit(exitcode)
 
-def user_error(*args, exitcode=1, **kwargs):
+def user_error(*args, **kwargs):
     print("\033[31mError: \033[0m", *args, **kwargs)
-    exit(exitcode)
 
 def warning(*args, **kwargs):
     print("\033[33mWarning: \033[0m", *args, **kwargs)
