@@ -13,16 +13,10 @@ if __name__ == "__main__":  # make relative imports work as described here: http
         filepath = path.realpath(path.abspath(__file__))
         sys.path.insert(0, path.dirname(path.dirname(filepath)))
 
-from .configs import read_config, select_config
+from .configs import ConfigManager
 from .ueberzug import UeberzugLayer
-
-
-settings = {
-            "q": "quit",
-            "s": "skip",
-            "u": "undo",
-            "o": "open"
-        }
+from .globals import version, settings_map
+from .globals import warning, error, user_error, info, create_dir
 
 # Size settings
 FOOTER_LEFT = 0
@@ -35,8 +29,6 @@ CURSOR_Y = 2
 
 KEYS_BEGIN = 5
 
-version = "1.2"
-
 class Sorter:
     def __init__(self, wdir, config):
         self.wd = wdir
@@ -48,9 +40,7 @@ class Sorter:
 
         self.keys = config
 
-        self.settings = settings
-
-        self.validate_dirs()
+        self.settings = settings_map
 
         # info about last action
         self.last_dir = ""
@@ -75,21 +65,6 @@ class Sorter:
         self._img_identifier = "imgsort_preview"
 
 
-
-
-    def validate_dirs(self):
-        """
-        Create the directories that dont exist.
-        """
-        for d in self.keys.values():
-            if not path.isdir(d):
-                print(f"Directory '{d}' does not exist.")
-                decision = input(f"Create directory '{path.abspath(d)}'? y/n: ")
-                if (decision == "y"):
-                    makedirs(d)
-                else:
-                    print("Exiting - can not use non-existing directory.")
-                    exit(1)
 
 
     def get_images(self):
@@ -133,7 +108,7 @@ class Sorter:
                     self.image_iter += 1
                     self.message = "Skipped image"
                     continue
-                elif settings[self.pressed_key] == "undo":
+                elif settings_map[self.pressed_key] == "undo":
                     if self.image_iter > 0:
                         self.image_iter -= 1 # using last image
                         rename(self.images_new[self.image_iter], self.images[self.image_iter])
@@ -143,7 +118,7 @@ class Sorter:
                     else:
                         self.message = "Nothing to undo!"
                         continue
-                elif settings[self.pressed_key] == "open":
+                elif settings_map[self.pressed_key] == "open":
                     try:
                         subprocess.run(['xdg-open', self.image], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
                         self.message = "Opening with xdg-open"
@@ -263,7 +238,7 @@ Image Sorter
     if 'IMGSOSRT_CONFIG_DIR' in os.environ: config_dir = os.environ['IMGSORT_CONFIG_DIR']
 
     parser = argparse.ArgumentParser("imgsort")
-    parser.add_argument("-c", "--config", action="store", help="name of the config file in ($IMGSORT_CONFIG_DIR > $XDG_CONFIG_HOME/imgsort > ~/.config/imgsort)")
+    parser.add_argument("-c", "--config", action="store", help="name of the config file in ($IMGSORT_CONFIG_DIR > $XDG_CONFIG_HOME/imgsort > ~/.config/imgsort)", default=None)
     parser.add_argument("-i", "--sort-dir", action="store", help="the directory where the folders from the config will be created")
     args = parser.parse_args()
 
@@ -274,23 +249,18 @@ Image Sorter
     else:
         args.sort_dir = getcwd()
 
-    # configuration
-    if args.config:
-        config_path = args.config_file
-        # search locally
-        if not path.isfile(config_path):
-            config_path = path.join(config_dir, args.config)
-            if not path.isfile(config_path):
-                parser.error(f"invalid configuration path/name:'{config_path}'/'{args.config}'")
-    else:
-        args.config = select_config()
+    confman = ConfigManager(config_dir)
 
-    config = read_config(args.config, root_directory=args.sort_dir)
-    if not config:
-        print("Error reading the config:")
-        print("  Config Name:", args.config)
-        print("  Config:", config)
-        exit(1)
+    # configuration
+    if not args.config:
+        args.config = confman.present_config_selection()
+    # if create config was selected
+    if args.config is False:
+        config = confman.create_config()
+    else:
+        if type(args.config) != str:
+            error(f"Could not determine condig file to load ('{args.config}' is of type '{type(args.config)}' not ")
+        config = confman.read_config(args.config, args.sort_dir)
 
     sorter = Sorter(wd, config)
     sorter.get_images()
