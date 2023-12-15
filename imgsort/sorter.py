@@ -13,8 +13,9 @@ if __name__ == "__main__":  # make relative imports work as described here: http
         filepath = path.realpath(path.abspath(__file__))
         sys.path.insert(0, path.dirname(path.dirname(filepath)))
 
-from .configs import ConfigManager
 from .ueberzug import UeberzugLayer
+
+from .configs import ConfigManager
 from .globals import version, settings_map
 from .globals import warning, error, user_error, info, create_dir
 
