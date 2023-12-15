@@ -26,6 +26,8 @@ imgsort
 Clone this repository and install it using python-pip.
 This project depends on ueberzug to display the images in the terminal.
 The original ueberzug is no longer maintained, but there is [a continuation](https://github.com/ueber-devel/ueberzug/) as well as a [new C++ alternative](https://github.com/jstkdng/ueberzugpp) available.
+You need to manually install one of them and then choose the corresponding `imgsort` branch.
+I would recommend the `ueberzugpp` as it also works on Wayland.
 
 For the version supporting the original **ueberzug**:
 ```shell
