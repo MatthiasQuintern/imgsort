@@ -16,7 +16,7 @@ if __name__ == "__main__":  # make relative imports work as described here: http
 import ueberzug.lib.v0 as uz
 
 from .configs import ConfigManager
-from .globals import version, settings_map
+from .globals import version, fullversion, settings_map
 from .globals import warning, error, user_error, info, create_dir
 
 # Size settings
@@ -29,8 +29,6 @@ CURSOR_X = 0
 CURSOR_Y = 2
 
 KEYS_BEGIN = 5
-
-version = "1.2-legacy"
 
 class Sorter:
     def __init__(self, wdir, canvas, config):
@@ -231,14 +229,14 @@ class Sorter:
 
 def main():
     # set working directory
-    print("""
+    print(f"""
 ===================================================================================================
-Image Sorter
+Image Sorter {fullversion}
 ===================================================================================================
 """)
     config_dir = os.path.join(os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config")), "imgsort")
     # check if environment variables are set and use them if they are
-    if 'IMGSOSRT_CONFIG_DIR' in os.environ: config_dir = os.environ['IMGSORT_CONFIG_DIR']
+    if 'IMGSORT_CONFIG_DIR' in os.environ: config_dir = os.environ['IMGSORT_CONFIG_DIR']
 
     parser = argparse.ArgumentParser("imgsort")
     parser.add_argument("-c", "--config", action="store", help="name of the config file in ($IMGSORT_CONFIG_DIR > $XDG_CONFIG_HOME/imgsort > ~/.config/imgsort)", default=None)
@@ -255,15 +253,10 @@ Image Sorter
     confman = ConfigManager(config_dir)
 
     # configuration
-    if not args.config:
-        args.config = confman.present_config_selection()
-    # if create config was selected
-    if args.config is False:
-        config = confman.create_config()
+    if type(args.config) == str:
+        config = confman.load_config(args.config, args.sort_dir)
     else:
-        if type(args.config) != str:
-            error(f"Could not determine condig file to load ('{args.config}' is of type '{type(args.config)}' not ")
-        config = confman.read_config(args.config, args.sort_dir)
+        config = confman.present_config_selection()
 
     with uz.Canvas() as canvas:
         sorter = Sorter(wd, canvas, config)

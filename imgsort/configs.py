@@ -29,16 +29,16 @@ class ConfigManager():
         self._configs = [ e for e in listdir(self._config_dir) if path.isfile(path.normpath(self._config_dir + "/" + e)) and e.endswith(".conf") ]
         self._configs.sort()
 
-    def present_config_selection(self):
+    def present_config_selection(self, root_directory="."):
         """
         Returns to path to an existing config or False if a new config should be created
         """
         # get configs
         if len(self._configs) == 0:
             info(f"No config valid file found in '{self._config_dir}'")
-            return False
+            return self.create_config(root_directory)
 
-        print("0: create new configuration")
+        print(" 0: create new configuration")
         for i, c in enumerate(self._configs):
             print(f"{i+1:2}: {c}")
 
@@ -54,8 +54,8 @@ class ConfigManager():
                 continue
 
             if choice == 0:
-                return False
-            return self._configs[choice-1]
+                return self.create_config(root_directory)
+            return self.load_config(self._configs[choice-1], root_directory)
 
 
     def _make_name(self, config_name: str):
@@ -64,12 +64,12 @@ class ConfigManager():
 
     def write_config(self, config_name: str, keys: dict[str,str]):
         file = open(path.normpath(self._config_dir + "/" + config_name), 'w')
-        file.write(f"# Config written by imgsort {version}.\n")
+        file.write(f"# Config written by imgsort {version}\n")
         for k, v in keys.items() :
             file.write(f"{k} = {v}\n")
 
 
-    def read_config(self, config_name: str, root_directory="."):
+    def load_config(self, config_name: str, root_directory="."):
         """
         @param root_directory Make all relative paths relative to this one
         """
@@ -89,13 +89,13 @@ class ConfigManager():
             match = re.fullmatch(r". = [^*?<>|]+", line)
             if match:
                 key, value = line.split(" = ")
-                keys[key]  = path.normpath(root_directory + "/" + value)
+                keys[key]  = value
             elif not line[0] == "#":
                 warning(f"In config file '{config_file}': Invalid line ({i+1}): '{line}'")
-        self.validate_dirs(keys)
+        self.validate_config(keys, root_directory)
         return keys
 
-    def create_config(self):
+    def create_config(self, root_directory="."):
         keys: dict[str, str] = {}
         print(
 f"""
@@ -103,7 +103,7 @@ f"""
 Creating a new config
     You can now map keys to directories.
     The key must be one single letter, a single digit number or some other keyboard key like .-#+&/ ...
-    The key can not be one of {' '.join(settings_map.keys())}.
+    The key can not be one of '{' '.join(settings_map.keys())}'.
     The directory must be a valid path to a directory, but is does not have to exist.
     You can use an absolute path (starting with '/', not '~') or a relative path (from here).
 ===================================================================================================
@@ -134,22 +134,26 @@ Creating a new config
             # match = re.match(r"/?([a-z-A-ZöÖäÄüÜ0-9/: _\-]+/)*[a-z-A-ZöÖäÄüÜ0-9/: _\-]+/?", directory)
             INVALID_PATH_CHARS = r":*?<>|"
             if any(c in INVALID_PATH_CHARS for c in directory):
-                user_error(f"Invalid directory path: '{directory}' contains at least one if '{INVALID_PATH_CHARS}'")
+                user_error(f"Invalid directory path: '{directory}' contains at least one of '{INVALID_PATH_CHARS}'")
                 continue
             keys[key] = directory
             print(f"Added: {key}: '{directory}'\n")
 
-        self.validate_dirs(keys)
+        self.validate_config(keys, root_directory)
 
         return keys
 
 
-    def validate_dirs(self, keys):
+    def validate_config(self, keys, root_directory):
         """
         Create the directories that dont exist.
         """
         missing = []
-        for d in keys.values():
+        for k, d in keys.items():
+            d = path.expanduser(d)
+            if not path.isabs(d):
+                d = path.normpath(root_directory + "/" + d)
+            keys[k] = d
             if not path.isdir(d):
                 missing.append(d)
         if len(missing) == 0: return
