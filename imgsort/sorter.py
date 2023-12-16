@@ -58,7 +58,7 @@ class Sorter:
         c.echo()
 
         # ueberzug
-        self._ueberzug = UeberzugLayer(pid_file="/tmp/ueberzu-imgsort.pid")
+        self._ueberzug = UeberzugLayer(pid_file="/tmp/ueberzug-imgsort.pid")
         self._img_x = SIDEBAR_WIDTH + 1
         self._img_y = 2
         self._img_width = self.win_x - SIDEBAR_WIDTH - 1
